@@ -41,7 +41,6 @@ end
 function export.generateProject(prj)
 	p.eol("\r\n")
 	p.indent("  ")
-	print("hello")
 	p.generate(prj, ".json", project.generate)
 end
 
@@ -81,6 +80,7 @@ export.elements.project = function(prj)
 		project.project,
 		project.kind,
 		project.language,
+		project.files,
 		project.config,
 		project.projectTail
 	}
@@ -115,18 +115,38 @@ function project.language(prj)
 	project.prop(prj, "language")
 end
 
-
-
 function project.config(prj)
 	p.w('"configurations":')
 	p.indent("  ", 2)
 	p.w('{')
 
 	for cfg in p.project.eachconfig(prj) do
+		
 		p.callArray(export.elements.config, cfg)
 	end
 	p.indent("  ", 2)
 	p.w('}')
+end
+
+function project.files(prj)
+	local files = {}
+
+	for _, block in ipairs(prj._cfgset.blocks) do
+		if block.files then
+			for _, file in ipairs(block.files) do
+				table.insert(files, path.getrelative(prj.basedir, file))
+			end
+		end
+	end
+
+	p.w('"files":[')
+	p.indent("  ", 3)
+	p.w('"' .. table.concat(files, '",\n			"') .. '"')
+
+	p.indent("  ", 2)
+
+	p.w('],')
+	
 end
 
 function project.projectTail(prj)
@@ -140,7 +160,6 @@ end
 export.elements.config = function(cfg)
 	return {
 		config.config,
-		config.files,
 		config.configTail,
 	}
 end
@@ -151,12 +170,8 @@ function config.config(cfg)
 	p.w('"%s":{', cfg["buildcfg"])
 	p.indent("  ", 4)
 end
-function config.files(cfg)
-	local fileConfigs = config.fileConfigs(cfg)
-	for _, fcfg in ipairs(fileConfigs) do
-		print(fcfg.path)
-	end
-end
+
+
 function config.configTail(cfg)
 	p.indent("  ", 3)
 	p.w('},')
@@ -170,6 +185,7 @@ function workspace.getconfigs(wks)
 	end
 	return cfgs
 end
+
 function project.getconfigs(prj)
 	local cfgs = {}
 	for cfg in p.project.eachconfig(prj) do
@@ -177,21 +193,7 @@ function project.getconfigs(prj)
 	end
 	return cfgs
 end
-function config.fileConfigs(cfg)
-	local fconfigs = {}
-	local tr       = p.project.getsourcetree(cfg.project)
-	if #tr.children > 0 then
-		p.tree.traverse(tr, {
-			onleaf = function(node)
-				local fcfg = p.fileconfig.getconfig(node, cfg)
-				if fcfg then
-					table.insert(fconfigs, fcfg)
-				end
-			end
-		})
-	end
-	return fconfigs;
-end
+
 
 --#endregion
 
