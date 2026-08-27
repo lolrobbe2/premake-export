@@ -90,6 +90,7 @@ export.elements.project = function(prj)
 		project.kind,
 		project.language,
 		project.files,
+		project.links,
 		project.projectTail
 	}
 end
@@ -123,7 +124,24 @@ function project.language(prj)
 	project.prop(prj, "language")
 end
 
+function project.links(prj)
+	local projectDependencies =  p.project.getdependencies(prj,'linkOnly')
+	local projectLinkNames = {}
+	for _, dependency in ipairs(projectDependencies) do
+		if dependency.name ~= "" then
+			table.insert(projectLinkNames,dependency.name)
+		end
+	end
+	p.w('"links":[')
+	p.indent("  ", 2)
+	--manually add the concat part
+	if #projectLinkNames > 0 then
+		p.w('"' .. table.concat(projectLinkNames, '",\n\t\t"') .. '"')
+	end
+	p.indent("  ", 1)
 
+	p.w(']')
+end
 
 function project.files(prj)
 	local files = {}
@@ -143,7 +161,7 @@ function project.files(prj)
 
 	p.indent("  ", 1)
 
-	p.w(']')
+	p.w('],')
 	
 end
 

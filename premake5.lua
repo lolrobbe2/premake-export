@@ -8,6 +8,20 @@ workspace "WorkspaceName"
        targetdir "bin/%{cfg.buildcfg}"
     
        files { "src/**.c", "include/**.h" }
+       links { "ProjectName2" }
+       filter "configurations:Debug"
+          defines { "DEBUG" }
+          symbols "On"
+    
+       filter "configurations:Release"
+          defines { "NDEBUG" }
+          optimize "On"
+    project "ProjectName2"
+       kind "StaticLib"
+       language "C"
+       targetdir "bin/%{cfg.buildcfg}"
+    
+       files { "src/**.c", "include/**.h" }
     
        filter "configurations:Debug"
           defines { "DEBUG" }
@@ -16,4 +30,5 @@ workspace "WorkspaceName"
        filter "configurations:Release"
           defines { "NDEBUG" }
           optimize "On"
+
 
