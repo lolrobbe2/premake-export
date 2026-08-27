@@ -23,6 +23,7 @@ export.elements.workspace = function(wks)
 		workspace.configurations,
 		workspace.location,
 		workspace.architecture,
+		workspace.projects,
 		workspace.workspaceTail
 	}
 end
@@ -64,7 +65,15 @@ function workspace.location(wks)
 end
 
 function workspace.architecture(wks)
-	p.w('"architecture": "%s"', wks.architecture)
+	p.w('"architecture": "%s",', wks.architecture)
+end
+
+function workspace.projects(wks)
+	local projectNames = {}
+	for _, prj in ipairs(wks.projects) do
+		table.insert(projectNames, prj.name)
+	end
+	p.w('"projects":["%s"]', table.concat(projectNames, '","'))
 end
 
 function workspace.workspaceTail(wks)
@@ -81,7 +90,6 @@ export.elements.project = function(prj)
 		project.kind,
 		project.language,
 		project.files,
-		project.config,
 		project.projectTail
 	}
 end
@@ -115,18 +123,7 @@ function project.language(prj)
 	project.prop(prj, "language")
 end
 
-function project.config(prj)
-	p.w('"configurations":')
-	p.indent("  ", 2)
-	p.w('{')
 
-	for cfg in p.project.eachconfig(prj) do
-		
-		p.callArray(export.elements.config, cfg)
-	end
-	p.indent("  ", 2)
-	p.w('}')
-end
 
 function project.files(prj)
 	local files = {}
@@ -140,12 +137,13 @@ function project.files(prj)
 	end
 
 	p.w('"files":[')
-	p.indent("  ", 3)
-	p.w('"' .. table.concat(files, '",\n			"') .. '"')
-
 	p.indent("  ", 2)
+	--manually add the concat part
+	p.w('"' .. table.concat(files, '",\n		"') .. '"')
 
-	p.w('],')
+	p.indent("  ", 1)
+
+	p.w(']')
 	
 end
 
@@ -155,27 +153,6 @@ function project.projectTail(prj)
 end
 
 --#endregion
---#region CONFIG
-
-export.elements.config = function(cfg)
-	return {
-		config.config,
-		config.configTail,
-	}
-end
-
-
-function config.config(cfg)
-	p.indent("  ", 3)
-	p.w('"%s":{', cfg["buildcfg"])
-	p.indent("  ", 4)
-end
-
-
-function config.configTail(cfg)
-	p.indent("  ", 3)
-	p.w('},')
-end
 
 --#region UTILS
 function workspace.getconfigs(wks)
