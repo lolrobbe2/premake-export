@@ -30,7 +30,7 @@ end
 function export.prepareWorkspace(wks)
 	-- set the default location
 	wks.location_backup = wks.location
-	wks.location = "export/workspaces"
+	wks.location = _OPTIONS["exportdir"] .. "export/workspaces"
 end
 
 function export.generateWorkspace(wks)
@@ -98,7 +98,7 @@ end
 function export.prepareProject(prj)
 	-- set the default location
 	prj.location_backup = prj.location
-	prj.location = "export/projects"
+	prj.location = _OPTIONS["exportdir"] .. "export/projects"
 end
 
 function project.generate(prj)
@@ -191,7 +191,11 @@ end
 
 
 --#endregion
-
+newoption {
+	trigger = "exportdir",
+	description = "Set the export directory",
+	default = "."
+}
 newaction {
 	trigger = "export",
 	shortname = "premake5 export module",
